@@ -156,17 +156,17 @@ module Benchmark
 
           Timing.clean_env
 
-          before = Time.now
-          target = Time.now + @warmup
+          before = cpu_time
+          target = cpu_time + @warmup
 
           warmup_iter = 0
 
-          while Time.now < target
+          while cpu_time < target
             item.call_times(1)
             warmup_iter += 1
           end
 
-          after = Time.now
+          after = cpu_time
 
           warmup_time_us = time_us before, after
 
@@ -190,17 +190,17 @@ module Benchmark
 
           iter = 0
 
-          target = Time.now + @time
+          target = cpu_time + @time
 
           measurements_us = []
 
           # running this number of cycles should take around 100ms
           cycles = @timing[item]
 
-          while Time.now < target
-            before = Time.now
+          while cpu_time < target
+            before = cpu_time
             item.call_times cycles
-            after = Time.now
+            after = cpu_time
 
             # If for some reason the timing said this took no time (O_o)
             # then ignore the iteration entirely and start another.
@@ -236,6 +236,10 @@ module Benchmark
 
       def create_report(item, measured_us, iter, avg_ips, sd_ips, cycles)
         @full_report.add_entry item.label, measured_us, iter, avg_ips, sd_ips, cycles
+      end
+
+      def cpu_time
+        Process.clock_gettime(Process::CLOCK_PROCESS_CPUTIME_ID)
       end
 
     end
